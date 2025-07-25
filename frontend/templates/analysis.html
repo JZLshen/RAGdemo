@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/css/analysis.css">
+    <title>RAG 评估仪表盘</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gauge.js/1.3.5/gauge.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script src="../static/js/analysis.js"></script>
+</head>
+<body  style="background-color: #dbefdb;">
+    <div class="container">
+        <!-- Metric Area -->
+        <div class="metric-area">
+            <h2 class="metric-area-title">Metric Area</h2>
+            <h3 class="metric-area-subtitle">Accuracy</h3> <!-- Accuracy 子标题 -->
+            <!-- Accuracy 仪表盘展示 -->
+            <div class="panel-container">
+                <div class="display-box">
+                    <div class="gauge-wrapper">
+                        
+                            <div class="gauge-title">GraphRAG</div>
+                            <canvas id="gauge1"></canvas>
+                            <div class="percentage" id="percentagegauge1"></div>
+                        
+                    </div>
+                    <div class="gauge-wrapper">
+                        
+                            <div class="gauge-title">VectorRAG</div>
+                            <canvas id="gauge2"></canvas>
+                            <div class="percentage" id="percentagegauge2"></div>
+                        
+                    </div>
+                    <div class="gauge-wrapper">
+                        
+                            <div class="gauge-title">HybridRAG</div>
+                            <canvas id="gauge3"></canvas>
+                            <div class="percentage" id="percentagegauge3"></div>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+
+
+        <!-- Error Statistic -->
+        <div class="metric-area">
+            <h3 class="metric-area-subtitle">Error Statistic</h3> <!-- Error Statistic 子标题 -->
+            <!-- 饼图部分 -->
+            <div class="chart-container">
+                <div class="display-box">
+                    <div class="chart-box">
+                        <h3 class="chart-box-title">VectorRAG</h3>
+                        <canvas id="pieChart1"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h3 class="chart-box-title">GraphRAG</h3>
+                        <canvas id="pieChart2"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h3 class="chart-box-title">HybridRAG</h3>
+                        <canvas id="pieChart3"></canvas>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+
+
+        <!-- Evaluation Metric -->
+        <div class="metric-area">
+            <h3 class="metric-area-subtitle">Evaluation Metric</h3> <!-- Evaluation Metric 子标题 -->
+            <!-- 雷达图部分 -->
+            <div class="radar-container">
+                <div class="display-box">
+                    <div class="radar-box">
+                        <h3 class="radar-box-title">VectorRAG</h3>  <!-- 移除 "Precision" -->
+                        <canvas id="radarChart1"></canvas>
+                    </div>
+                    <div class="radar-box">
+                        <h3 class="radar-box-title">GraphRAG</h3>  <!-- 移除 "Precision" -->
+                        <canvas id="radarChart2"></canvas>
+                    </div>
+                    <div class="radar-box">
+                        <h3 class="radar-box-title">HybridRAG</h3>  <!-- 移除 "Precision" -->
+                        <canvas id="radarChart3"></canvas>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    <script src="../static/js/analysis.js"></script>
+</body>
+</html>

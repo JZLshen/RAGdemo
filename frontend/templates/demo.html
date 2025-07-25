@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeutronRAG Demo - 多用户版</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/demo.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/analysis.css') }}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gauge.js/1.3.5/gauge.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script src="../static/js/analysis.js"></script>
+</head>
+<body style="background-color: #dbefdb;">
+    <div class="container">
+        <header class="header">
+            <div class="title">
+                <h1>NeutronRAG Demo</h1>
+                <h2 class="subtitle">Multi-Dimension Feedback</h2>
+            </div>
+            <input type="text" placeholder="请输入内容..." id="user-input" class="input-box">
+            <button id="send-button" class="send-button">Send</button>
+            <div class="user-area">
+                 <i class="material-icons user-icon">account_circle</i>
+                 <span id="user-info-display" style="margin-left: 5px; display: none; color: #eee; font-weight: bold;"></span>
+                 <button id="logout-button" class="logout-button" style="margin-left: 15px; display: none; padding: 5px 10px; cursor: pointer;">登出</button>
+            </div>
+        </header>
+
+        <aside class="left-sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-header" onclick="toggleSidebarSection(this)">
+                    <h3>Setting Bar</h3>
+                    <i class="material-icons">expand_more</i>
+                </div>
+                <div class="sidebar-content setting-content">
+                    <div class="input-group">
+                        <label for="model-select">Model:</label>
+                        <select id="model-select" name="model-select">
+                            <option value="llama3:70b">llama3:70b</option>
+                            <option value="llama3:8b">llama3:8b</option>
+                            <option value="llama2:13b">llama2:13b</option>
+                            <option value="deepseek-reasoner">DeepSeek-R1</option>
+                            </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="api-key-input">API-KEY:</label>
+                        <input type="text" id="api-key-input" name="api-key-input" value="" placeholder="Enter API Key (if required)">
+                    </div>
+                    <div class="sidebar-section-inner">
+                        <div class="sidebar-header-inner" onclick="toggleSidebarSection(this)">
+                            <h3>Dataset Dimensions</h3>
+                            <i class="material-icons">expand_more</i>
+                        </div>
+                        <div class="sidebar-content-inner">
+                            <div class="input-group dataset-dimension-group">
+                                <label for="dim1-hops">Hops:</label>
+                                <select id="dim1-hops" name="dim1-hops">
+                                    <option value="">-- Select Hops --</option>
+                                </select>
+                            </div>
+                            <div class="input-group dataset-dimension-group">
+                                <label for="dim2-task">Task:</label>
+                                <select id="dim2-task" name="dim2-task" disabled>
+                                    <option value="">-- Select Task --</option>
+                                </select>
+                            </div>
+                            <div class="input-group dataset-dimension-group">
+                                <label for="dim3-scale">Scale:</label>
+                                <select id="dim3-scale" name="dim3-scale" disabled>
+                                    <option value="">-- Select Scale --</option>
+                                </select>
+                            </div>
+                            <div id="selected-datasets-display" class="selected-datasets-container">
+                                <h4>Selected Datasets:</h4>
+                                <ul id="selected-datasets-list">
+                                    <li>Select dimensions above...</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sidebar-section-inner">
+                        <div class="sidebar-header-inner" onclick="toggleSidebarSection(this)">
+                            <h3>VectorRAG</h3>
+                            <i class="material-icons">expand_more</i>
+                        </div>
+                        <div class="sidebar-content-inner">
+                             <div class="input-group">
+                                <label for="top-k">TOP-K:</label>
+                                <input type="number" id="top-k" name="top-k" value="5">
+                            </div>
+                            <div class="input-group">
+                                <label for="similarity-threshold">Threshold:</label>
+                                <input type="number" id="similarity-threshold" name="similarity-threshold" value="0.8" step="0.01">
+                            </div>
+                            <div class="input-group">
+                                <label for="chunk-size">ChunkSize:</label>
+                                <input type="number" id="chunk-size" name="chunk-size" value="128">
+                            </div>
+                        </div>
+                    </div>
+                     <div class="sidebar-section-inner">
+                         <div class="sidebar-header-inner" onclick="toggleSidebarSection(this)">
+                            <h3>GraphRAG</h3>
+                            <i class="material-icons">expand_more</i>
+                        </div>
+                        <div class="sidebar-content-inner">
+                           <div class="input-group">
+                                <label for="k-hop">K-HOP:</label>
+                                <select id="k-hop" name="k-hop">
+                                    <option value="1">1</option>
+                                    <option value="2" selected>2</option> <option value="3">3</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="max-keywords">Keywords:</label>
+                                <input type="number" id="max-keywords" name="max-keywords" value="10">
+                            </div>
+                            <div class="input-group">
+                                <label for="pruning">Pruning:</label>
+                                <select id="pruning" name="pruning">
+                                    <option value="yes">YES</option>
+                                    <option value="no">NO</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sidebar-section-inner">
+                        <div class="sidebar-header-inner" onclick="toggleSidebarSection(this)">
+                            <h3>HybridRAG</h3>
+                            <i class="material-icons">expand_more</i>
+                        </div>
+                        <div class="sidebar-content-inner">
+                            <div class="input-group">
+                                <label for="strategy">Strategy:</label>
+                                <select id="strategy" name="strategy">
+                                    <option value="union">Union</option>
+                                    <option value="intersection">Intersection</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="vector-proportion">Vector:</label>
+                                <input type="number" id="vector-proportion" name="vector-proportion" min="0" max="1" step="0.1" value="0.9">
+                            </div>
+                            <div class="input-group">
+                                <label for="graph-proportion">Graph:</label>
+                                <input type="number" id="graph-proportion" name="graph-proportion" min="0" max="1" step="0.1" value="0.8">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button id="applySettingsButton" class="run-button" style="height: 50px;" disabled>Apply Settings</button>
+            <button id="ContinuegenetationButton" class="continue-button" style="height: 50px;" disabled>Continue genetation</button>
+            <button id="StopButton" class="StopButton" style="height: 50px;" disabled>StopButton</button>
+        </aside>
+
+        <main class="main-content">
+            <section class="answer-section section-box">
+                <div class="section-title answer-title">
+                    <span>Answer</span>
+                    <div class="rag-selector">
+                        <label for="rag-select">Mode:</label>
+                        <select id="rag-select">
+                            <option value="vector">Vector</option>
+                            <option value="graph">Graph</option>
+                            <option value="hybrid" selected>Hybrid</option> </select>
+                    </div>
+                    <div class="title-icons">
+                        <img class="answer-icon" src="{{ url_for('static', filename='lib/qa.png') }}" alt="Answer Icon">
+                    </div>
+                </div>
+                <div class="content-wrapper">
+                    <div class="answer-content">
+                        <div class="box" id="current-answer-display">
+                            <div class="content" id="current-answer-content">
+                                <div class="placeholder-text">请输入内容或从历史记录中选择。</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="suggestion-section section-box">
+                 <div class="advice-box">
+                    <div class="section-title suggestion-title">
+                        <span>Suggestions</span>
+                        <div class="title-icons">
+                            <img src="{{ url_for('static', filename='lib/lantern.png') }}" alt="Suggestion Icon" class="suggestion-icon">
+                        </div>
+                    </div>
+                    <div class="advice-section">
+                        <div class="box" id="advice-box">
+                            <div class="content advice-content-wrapper" id="advice-content">
+                                <img src="{{ url_for('static', filename='lib/suggestion.png') }}" alt="Suggestion Type Icon" class="advice-type-icon">
+                                <div id="advice-text">
+                                    应用设置后或可查看建议。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="retrieval-result section-box">
+                <div class="section-title">
+                  <span>Retrieval Result</span>
+                  <div class="title-icons">
+                    <i class="material-icons resize-icon enlarge-icon" onclick="toggleResize(this, 'section')">fullscreen</i>
+                  </div>
+                </div>
+                <div class="retrieval-content">
+                    <div class="box" id="vector-result"> <h3 class="retrieval-box-title">Vector Results</h3>
+                        <div id="vector-content">
+                            点击历史记录查看详情。
+                        </div>
+                    </div>
+                    <div class="box" id="cy-container"> <h3 class="retrieval-box-title">Knowledge Graph</h3>
+                        <div id="cy"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="history-section section-box">
+                <div class="section-title" id="history-title">
+                    <span>History</span>
+                    <div class="history-session-controls">
+                         <label for="history-session-select" style="margin-left: 10px;">会话:</label>
+                         <select id="history-session-select">
+                             </select>
+                         <button id="new-history-session-button" title="新会话">+</button>
+                         <div id="new-session-input-container" style="display: none; margin-left: 5px; align-items: center;">
+                            <input type="text" id="new-session-name-input" placeholder="输入名称 & 回车" size="15">
+                            <button id="cancel-new-session-button" title="取消" class="cancel-button" style="margin-left: 3px; padding: 1px 4px; font-size: 0.8em; line-height: 1;">✕</button>
+                         </div>
+                    </div>
+                     <div class="title-icons">
+                        <img src="{{ url_for('static', filename='lib/history.png') }}" alt="History Icon" class="history-icon">
+                     </div>
+                </div>
+                <div class="history-content" id="scroll-container">
+                    <div id="question-list">
+                        请选择或创建一个会话。
+                    </div>
+                    <div class="more-info">
+                        <span class="more-info-text">点击查看详细分析</span>
+                        <i class="material-icons more-button">arrow_forward</i>
+                        <a href="{{ url_for('analysis') }}" id="moreAnalysisLink" class="more-link" style="margin-left: 5px;">More</a>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div class="metric-container">
+        <!-- Metric Area -->
+        <div class="metric-area">
+            <h2 class="metric-area-title">Metric Area</h2>
+            <h3 class="metric-area-subtitle">Accuracy</h3> <!-- Accuracy 子标题 -->
+            <!-- Accuracy 仪表盘展示 -->
+            <div class="panel-container">
+                <div class="display-box">
+                    <div class="gauge-wrapper">
+                        
+                            <div class="gauge-title">VectorRAG</div>
+                            <canvas id="gauge1"></canvas>
+                            <div class="percentage" id="percentagegauge1"></div>
+                        
+                    </div>
+                    <div class="gauge-wrapper">
+                        
+                            <div class="gauge-title">GraphRAG</div>
+                            <canvas id="gauge2"></canvas>
+                            <div class="percentage" id="percentagegauge2"></div>
+                        
+                    </div>
+                    <div class="gauge-wrapper">
+                        
+                            <div class="gauge-title">HybridRAG</div>
+                            <canvas id="gauge3"></canvas>
+                            <div class="percentage" id="percentagegauge3"></div>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+
+
+        <!-- Error Statistic -->
+        <div class="metric-area">
+            <h3 class="metric-area-subtitle">Error Statistic</h3> <!-- Error Statistic 子标题 -->
+            <!-- 饼图部分 -->
+            <div class="chart-container">
+                <div class="display-box">
+                    <div class="chart-box">
+                        <h3 class="chart-box-title">VectorRAG</h3>
+                        <canvas id="pieChart1"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h3 class="chart-box-title">GraphRAG</h3>
+                        <canvas id="pieChart2"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h3 class="chart-box-title">HybridRAG</h3>
+                        <canvas id="pieChart3"></canvas>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+
+
+        <!-- Evaluation Metric -->
+        <div class="metric-area">
+            <h3 class="metric-area-subtitle">Evaluation Metric</h3> <!-- Evaluation Metric 子标题 -->
+            <!-- 雷达图部分 -->
+            <div class="radar-container">
+                <div class="display-box">
+                    <div class="radar-box">
+                        <h3 class="radar-box-title">VectorRAG</h3>  <!-- 移除 "Precision" -->
+                        <canvas id="radarChart1"></canvas>
+                    </div>
+                    <div class="radar-box">
+                        <h3 class="radar-box-title">GraphRAG</h3>  <!-- 移除 "Precision" -->
+                        <canvas id="radarChart2"></canvas>
+                    </div>
+                    <div class="radar-box">
+                        <h3 class="radar-box-title">HybridRAG</h3>  <!-- 移除 "Precision" -->
+                        <canvas id="radarChart3"></canvas>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/demo.js') }}"></script>
+</body>
+</html>

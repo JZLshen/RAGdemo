@@ -1,0 +1,13 @@
+.vscode
+logs/
+logs
+__pycache__/
+run.sh
+dataset/rgb
+dataset/multihop
+KGModify/
+kg_modify.py
+test.py
+# 忽略 backend/external_corpus 下的所有文件和子目录
+backend/external_corpus/*
+NeutronRAG/backend/llmragenv/chat_history/*
